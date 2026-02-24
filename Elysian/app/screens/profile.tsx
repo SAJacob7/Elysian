@@ -11,16 +11,25 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { onAuthStateChanged, User, updateProfile } from "firebase/auth";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { query, where, collection, getDocs } from "firebase/firestore";
+import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
 import { styles, inputTheme } from "./app_styles.styles";
 import { profileStyles } from "./profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import * as ImagePicker from "expo-image-picker";
 import { setDoc, onSnapshot } from "firebase/firestore";
-import { Alert } from "react-native";
+import { Alert, FlatList } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { homeStyles } from "./home.styles";
+import { SafeAreaView } from "react-native-safe-area-context";
 
+// this defines what the post object should look like
+type Post = {
+  id: string;
+  urls: string[]; // Allow users to upload multiple pictures.
+  uploader: string;
+  timestamp: number;
+};
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -195,11 +204,94 @@ const Profile = () => {
   const handleViewPreferences = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
-  const UserPosts = () => (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Text style={{ textAlign: "center", marginTop: 20 }}>User Posts</Text>
-    </View>
-  );
+
+  const UserPosts = () => {
+    const [posts, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
+
+    useEffect(() => {
+      if(!user){
+        return
+      }
+      const q = query(
+        collection(FIREBASE_DB, "posts"),
+        where("uid", "==", user.uid),
+        orderBy("timestamp", "desc")
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        // store the function that stops listening into the variable unsubscribe
+        const data: Post[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Post, "id">),
+        }));
+        setPosts(data);
+      });
+      return () => unsubscribe();
+    }, []);
+
+    return (
+      <SafeAreaView edges={["top"]}>
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View style={homeStyles.postContainer}>
+      
+                  {/* IMAGE SECTION */}
+                  <View style={homeStyles.imageContainer}>
+                    <FlatList
+                      data={item.urls}
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      keyExtractor={(uri, index) => uri + index}
+                      renderItem={({ item: uri }) => (
+                        <Image
+                          source={{ uri }}
+                          style={[homeStyles.cityImage]}
+                          resizeMode="cover"
+                        />
+                      )}
+                    />
+                    <View style={homeStyles.cityOverlay}>
+                      <Text style={homeStyles.cityFont}>City</Text>
+                      {/* Row for pin + country */}
+                      <View style={homeStyles.pinIcon}>
+                        <MaterialCommunityIcons name="map-marker-outline" size={22} color="white" />
+                        <Text style={homeStyles.countryFont}>Country</Text>
+                      </View>
+                    </View>
+                    <View style={homeStyles.ratingOverlay}>
+                        <View style={homeStyles.ratingTag}>
+                          <Text style={homeStyles.ratingFont}>3</Text>
+                          <MaterialCommunityIcons name="star-face" size={20} color="#000" />
+                        </View>
+                    </View>
+                  </View>
+      
+      
+                  {/* CONTENT SECTION */}
+                  <View style={homeStyles.contentContainer}>
+                    <View>
+                      <Text style={homeStyles.uploader}>@{item.uploader}</Text>
+                      <Text style={homeStyles.date}>date</Text>
+                    </View>
+      
+                    <View style={homeStyles.postIcons}>
+                      <TouchableOpacity>
+                        <Ionicons name="heart-outline" size={28} color="#000" />
+                      </TouchableOpacity>
+                      <TouchableOpacity>
+                        <Ionicons name="bookmark-outline" size={28} color="#000" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+      
+                </View>
+              )}
+            />
+          </SafeAreaView>
+        );
+  };
 
   const UserItineraries = () => (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
