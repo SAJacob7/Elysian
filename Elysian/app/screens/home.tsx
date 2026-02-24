@@ -34,6 +34,9 @@ import type { HomeStackParamList } from "./navigation_bar";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
+import { getAuth } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { deleteField } from "firebase/firestore";
 
 // Post type now matches create post 
 type Post = {
@@ -56,9 +59,10 @@ type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
+  const [userFavorites, setUserFavorites] = useState<{ [key: string]: boolean }>({});
   const navigation = useNavigation<HomeNavigationProp>();
 
-  // Sync Firestore 
+  // Sync posts from Firestore
   useEffect(() => {
     const q = query(
       collection(FIREBASE_DB, "posts"),
@@ -71,6 +75,26 @@ const Home = () => {
         ...(doc.data() as Omit<Post, "id">),
       }));
       setPosts(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync userFavorites from Firestore 
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+    const unsubscribe = onSnapshot(userFavoritesRef, (snapshot) => {
+      const data = snapshot.data() || {};
+      const favs: { [key: string]: boolean } = {};
+      Object.keys(data).forEach((key) => {
+        favs[key] = true;
+      });
+      setUserFavorites(favs);
     });
 
     return () => unsubscribe();
@@ -136,6 +160,53 @@ const Home = () => {
       ...prev,
       [postId]: !prev[postId],
     }));
+  };
+
+  // Add city to userFavorites 
+  const addCity = async (city: { id: string; name: string; country: string }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        console.error("User not signed in.");
+        return;
+      }
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: {
+            city_name: city.name,
+            country_name: city.country,
+          },
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+    }
+  };
+
+  // Remove city from userFavorites
+  const removeCity = async (city: { id: string; name: string; country: string }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: deleteField(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.error("Error removing from favorites:", err);
+    }
   };
 
   return (
@@ -251,8 +322,28 @@ const Home = () => {
                 <TouchableOpacity>
                   <Ionicons name="heart-outline" size={28} color="#000" />
                 </TouchableOpacity>
-                <TouchableOpacity>
-                  <Ionicons name="bookmark-outline" size={28} color="#000" />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!item.city) return;
+
+                    const postCity = {
+                      id: item.city.id,
+                      name: item.city.name,
+                      country: item.city.country,
+                    };
+
+                    if (userFavorites[item.city.id]) { // Already saved so remove city 
+                      removeCity(postCity);
+                    } else {
+                      addCity(postCity); // Not saved so add city to favorites 
+                    }
+                  }}
+                >
+                  <Ionicons
+                    name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
+                    size={28}
+                    color={item.city && userFavorites[item.city.id] ? "#000" : "#000"}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
