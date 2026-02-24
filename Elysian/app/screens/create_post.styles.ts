@@ -185,19 +185,5 @@ export const createPostStyles = StyleSheet.create({
         alignItems: "center",
 
         zIndex: 9999,
-    },
-
-    uploadBox: {
-        paddingVertical: 20,
-        paddingHorizontal: 30,
-        borderRadius: 16,
-    },
-
-    uploadText: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "white"
-    },
-
-
+    }
 })

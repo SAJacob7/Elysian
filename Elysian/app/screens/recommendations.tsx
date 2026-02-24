@@ -27,12 +27,12 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   GlassView,
-  GlassStyle,
   isLiquidGlassAvailable,
 } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
+import PenguinLoader from "./penguin_loader";
 
 // Define the navigation parameter list
 export type RootParamList = {
@@ -54,37 +54,6 @@ type City = {
   city_name: string;
   country_name: string;
   score: number;
-};
-
-// Cute spinning globe loader
-const GlobeLoader = () => {
-  const spinAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(spinAnim, {
-        toValue: 1,
-        duration: 1200,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [spinAnim]);
-
-  const spin = spinAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-
-  return (
-    <View style={styles.globeLoaderContainer}>
-      <Animated.View style={{ transform: [{ rotate: spin }] }}>
-        <MaterialCommunityIcons name="earth" size={40} color="#6540D8" />
-      </Animated.View>
-    </View>
-  );
 };
 
 // Home component
@@ -451,7 +420,7 @@ const Recommendations = () => {
     <SafeAreaView style={styles.safeArea}>
       {/* Loading */}
       {loading && (
-        <Text style={styles.sectionTitle}>Loading recommendations...</Text>
+        <PenguinLoader text="Finding your perfect destination..." />
       )}
 
       {/* Error */}

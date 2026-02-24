@@ -34,6 +34,7 @@ import { Ionicons, Entypo } from "@expo/vector-icons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 import type { HomeStackParamList } from "./navigation_bar";
+import PenguinLoader from "./penguin_loader";
 
 type CreatePostRouteProp = RouteProp<HomeStackParamList, "CreatePost">;
 
@@ -225,18 +226,18 @@ const CreatePost = () => {
             // Upload images to S3
             const allUploadUrls: string[] = [];
             for (const uri of imageURIs) {
-            const filename = uri.split("/").pop();
-            const response = await fetch(
-                `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
-            );
-            const data = await response.json();
-            const { uploadUrl, fileUrl } = data;
+                const filename = uri.split("/").pop();
+                const response = await fetch(
+                    `https://adsorm74va.execute-api.us-east-1.amazonaws.com/prod/upload-url?filename=${filename}`
+                );
+                const data = await response.json();
+                const { uploadUrl, fileUrl } = data;
 
-            const image = await fetch(uri);
-            const blob = await image.blob();
-            await fetch(uploadUrl, { method: "PUT", body: blob });
+                const image = await fetch(uri);
+                const blob = await image.blob();
+                await fetch(uploadUrl, { method: "PUT", body: blob });
 
-            allUploadUrls.push(fileUrl);
+                allUploadUrls.push(fileUrl);
             }
 
             // Create a new post in the `posts` collection
@@ -265,11 +266,11 @@ const CreatePost = () => {
 
             // Initialize if document doesn't exist
             if (!userSnap.exists()) {
-            await setDoc(userRef, {
-                personalElos: {},
-                comparisonCount: 0,
-                posts: [],
-            });
+                await setDoc(userRef, {
+                    personalElos: {},
+                    comparisonCount: 0,
+                    posts: [],
+                });
             }
 
             // Prepare updates
@@ -277,26 +278,26 @@ const CreatePost = () => {
 
             // Apply personalElos and comparisonCount updates from rating
             if (pendingRatingUpdates.personalElos) {
-            for (const [cityId, elo] of Object.entries(pendingRatingUpdates.personalElos)) {
-                updates[`personalElos.${cityId}`] = elo;
-            }
+                for (const [cityId, elo] of Object.entries(pendingRatingUpdates.personalElos)) {
+                    updates[`personalElos.${cityId}`] = elo;
+                }
             }
 
             if (pendingRatingUpdates.comparisonIncrement) {
-            updates.comparisonCount = increment(pendingRatingUpdates.comparisonIncrement);
+                updates.comparisonCount = increment(pendingRatingUpdates.comparisonIncrement);
             }
 
             await updateDoc(userRef, updates);
 
             // Update global Elos
             if (pendingRatingUpdates.globalElos) {
-            for (const [cityId, elo] of Object.entries(pendingRatingUpdates.globalElos)) {
-                const cityRef = doc(FIREBASE_DB, "allCities", cityId);
-                await updateDoc(cityRef, {
-                    global_Elo: elo,
-                    comparison_count: increment(pendingRatingUpdates.comparisonIncrement),
-                });
-            }
+                for (const [cityId, elo] of Object.entries(pendingRatingUpdates.globalElos)) {
+                    const cityRef = doc(FIREBASE_DB, "allCities", cityId);
+                    await updateDoc(cityRef, {
+                        global_Elo: elo,
+                        comparison_count: increment(pendingRatingUpdates.comparisonIncrement),
+                    });
+                }
             }
 
             // Cleanup local state
@@ -326,13 +327,13 @@ const CreatePost = () => {
                 console.log("Starting rating");
 
                 const res = await fetch("https://capstone-team-generated-group30-project.onrender.com/rate-city", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_id: getAuth().currentUser?.uid,
-                    city_id: selectedCity.id,
-                    feedback: feedBack,
-                }),
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: getAuth().currentUser?.uid,
+                        city_id: selectedCity.id,
+                        feedback: feedBack,
+                    }),
                 });
 
                 const data = await res.json();
@@ -681,11 +682,7 @@ const CreatePost = () => {
 
             {uploading && (
             <View style={createPostStyles.uploadOverlay}>
-                <View style={createPostStyles.uploadBox}>
-                    <Text variant="headlineMedium" style={createPostStyles.uploadText}>
-                        Uploading post...
-                    </Text>
-                </View>
+                <PenguinLoader textColor="white" text="Uploading your post.." />
             </View>
         )}
         </SafeAreaView>

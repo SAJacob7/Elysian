@@ -44,9 +44,10 @@ export const homeStyles = StyleSheet.create({
 
   cityOverlay: {
     position: "absolute",
-    top: 140,
+    top: 120,
     left: 20,
     bottom: 20,
+    pointerEvents: "none"
   },
 
   cityFont: {
@@ -85,7 +86,8 @@ export const homeStyles = StyleSheet.create({
 
   ratingFont: {
     color: "black",
-    fontSize: 18,
+    fontSize: 17,
+    fontWeight: 600
   },
 
   contentContainer: {
@@ -128,7 +130,35 @@ export const homeStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "45%",
+    height: "50%",
+    pointerEvents: "none"
+  },
+
+  // Scroll indicator container (dots at bottom center of image)
+  scrollIndicatorContainer: {
+    position: "absolute",
+    bottom: 10, // Distance from bottom of image
+    alignSelf: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // Individual dot
+  scrollDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.5)", // semi-transparent by default
+    marginHorizontal: 3,
+  },
+
+  // Active dot (current image)
+  activeScrollDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "white",
   },
 
 }); 

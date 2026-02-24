@@ -40,6 +40,7 @@ import { GlassView } from "expo-glass-effect";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import MaskedView from "@react-native-masked-view/masked-view";
+import PenguinLoader from "./penguin_loader";
 
 interface Recommendation {
   city_id: string;
@@ -456,7 +457,7 @@ const Favorites = () => {
           </Text>
 
           {loading && (
-            <Text style={styles.sectionTitle}>Loading favorites...</Text>
+            <PenguinLoader text="Loading your favorite cities!" />
           )}
           {error && !loading && <Text>{error}</Text>}
 

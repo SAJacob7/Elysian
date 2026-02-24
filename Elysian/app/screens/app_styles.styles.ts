@@ -108,12 +108,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 
-  globeLoaderContainer: {
-    marginTop: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
   safeArea: {
     flex: 1,
     backgroundColor: "#FFFFFF",
