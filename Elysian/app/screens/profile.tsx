@@ -22,12 +22,25 @@ import { Alert, FlatList } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { homeStyles } from "./home.styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+import { getAuth } from "firebase/auth";
+import { deleteField } from "firebase/firestore";
 
 // this defines what the post object should look like
 type Post = {
   id: string;
-  urls: string[]; // Allow users to upload multiple pictures.
+  urls: string[];
   uploader: string;
+  uid: string;
+  city: {
+    id: string;
+    name: string;
+    country: string;
+  };
+  review: string;
+  ratingValue: number;
   timestamp: number;
 };
 
@@ -53,6 +66,9 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uloading, setUploading] = useState(true);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
+  const [userFavorites, setUserFavorites] = useState<{ [key: string]: boolean }>({});
+  
   const subTab = createMaterialTopTabNavigator();
 
 
@@ -199,14 +215,68 @@ const Profile = () => {
       setUploading(false);
     }
   };
+  
+  const handleReview = (postId: string) => {
+    setExpandedReview(prev => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
+  };
 
   // When handleViewPrefernces is called (menu icon pressed) it goes to profile_preferences.tsx page
   const handleViewPreferences = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
 
+  const removeCity = async (city: { id: string; name: string; country: string }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: deleteField(),
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.error("Error removing from favorites:", err);
+    }
+  };
+  
+  const addCity = async (city: { id: string; name: string; country: string }) => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        console.error("User not signed in.");
+        return;
+      }
+      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
+
+      await setDoc(
+        userFavoritesRef,
+        {
+          [city.id]: {
+            city_name: city.name,
+            country_name: city.country,
+          },
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.error("Error adding to favorites:", err);
+    }
+  };
+
   const UserPosts = () => {
     const [posts, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
       if(!user){
@@ -226,7 +296,17 @@ const Profile = () => {
         setPosts(data);
       });
       return () => unsubscribe();
-    }, []);
+    }, [user]);
+
+    const openPostModal = (post: Post) =>{
+      setSelectedPost(post);
+      setModalVisible(true);
+    };
+
+    const closePostModal = () => {
+      setSelectedPost(null);
+      setModalVisible(false);
+    }
 
     return (
       <SafeAreaView edges={["top"]}>
@@ -234,57 +314,132 @@ const Profile = () => {
               data={posts}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View style={homeStyles.postContainer}>
-      
-                  {/* IMAGE SECTION */}
-                  <View style={homeStyles.imageContainer}>
-                    <FlatList
-                      data={item.urls}
-                      horizontal
-                      pagingEnabled
-                      showsHorizontalScrollIndicator={false}
-                      keyExtractor={(uri, index) => uri + index}
-                      renderItem={({ item: uri }) => (
-                        <Image
-                          source={{ uri }}
-                          style={[homeStyles.cityImage]}
-                          resizeMode="cover"
+              <View style={homeStyles.postContainer}>
+
+                {/* Image */}
+                <View style={homeStyles.imageContainer}>
+                  <FlatList
+                    data={item.urls}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(uri, index) => uri + index}
+                    renderItem={({ item: uri }) => (
+                      <Image
+                        source={{ uri }}
+                        style={homeStyles.cityImage}
+                        resizeMode="cover"
+                      />
+                    )}
+                  />
+
+                  {/* Progressive Blur on bottom */}
+                  <View style={homeStyles.postBlurContainer}>
+                    <MaskedView
+                      maskElement={
+                        <LinearGradient
+                          colors={["transparent", "rgba(255,255,255,0.9)"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={{ flex: 1 }}
                         />
-                      )}
-                    />
+                      }
+                      style={{ flex: 1 }}
+                    >
+                      <BlurView
+                        intensity={100}
+                        tint="dark"
+                        style={{ flex: 1 }}
+                      />
+                    </MaskedView>
+                  </View>
+
+                  {/* City, Country */}
+                  {item.city && (
                     <View style={homeStyles.cityOverlay}>
-                      <Text style={homeStyles.cityFont}>City</Text>
-                      {/* Row for pin + country */}
+                      <Text style={homeStyles.cityFont}>
+                        {item.city.name}
+                      </Text>
+
                       <View style={homeStyles.pinIcon}>
-                        <MaterialCommunityIcons name="map-marker-outline" size={22} color="white" />
-                        <Text style={homeStyles.countryFont}>Country</Text>
+                        <MaterialCommunityIcons
+                          name="map-marker-outline"
+                          size={22}
+                          color="white"
+                        />
+                        <Text style={homeStyles.countryFont}>
+                          {item.city.country}
+                        </Text>
                       </View>
                     </View>
+                  )}
+
+                  {/* Rating */}
+                  {item.ratingValue !== undefined && (
                     <View style={homeStyles.ratingOverlay}>
-                        <View style={homeStyles.ratingTag}>
-                          <Text style={homeStyles.ratingFont}>3</Text>
-                          <MaterialCommunityIcons name="star-face" size={20} color="#000" />
-                        </View>
+                      <View style={homeStyles.ratingTag}>
+                        <Text style={homeStyles.ratingFont}>
+                          {item.ratingValue.toFixed(1)}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="star-face"
+                          size={20}
+                          color="#000"
+                        />
+                      </View>
                     </View>
+                  )}
+                </View>
+
+                {/* Uploader, review, date */}
+                <View style={homeStyles.contentContainer}>
+                  <View>
+                    <Text style={homeStyles.uploader}>
+                      @{item.uploader}
+                    </Text>
+                    <TouchableOpacity onPress={() => handleReview(item.id)}>
+                      <Text
+                        style={homeStyles.reviewFont}
+                        numberOfLines={expandedReview[item.id] ? undefined : 2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.review}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text style={homeStyles.date}>
+                      {new Date(item.timestamp).toLocaleDateString()}
+                    </Text>
                   </View>
-      
-      
-                  {/* CONTENT SECTION */}
-                  <View style={homeStyles.contentContainer}>
-                    <View>
-                      <Text style={homeStyles.uploader}>@{item.uploader}</Text>
-                      <Text style={homeStyles.date}>date</Text>
-                    </View>
-      
-                    <View style={homeStyles.postIcons}>
-                      <TouchableOpacity>
-                        <Ionicons name="heart-outline" size={28} color="#000" />
-                      </TouchableOpacity>
-                      <TouchableOpacity>
-                        <Ionicons name="bookmark-outline" size={28} color="#000" />
-                      </TouchableOpacity>
-                    </View>
+
+                  <View style={homeStyles.postIcons}>
+                    <TouchableOpacity>
+                      <Ionicons name="heart-outline" size={28} color="#000" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (!item.city) return;
+
+                        const postCity = {
+                          id: item.city.id,
+                          name: item.city.name,
+                          country: item.city.country,
+                        };
+
+                        if (userFavorites[item.city.id]) { // Already saved so remove city 
+                          removeCity(postCity);
+                        } else {
+                          addCity(postCity); // Not saved so add city to favorites 
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
+                        size={28}
+                        color={item.city && userFavorites[item.city.id] ? "#000" : "#000"}
+                      />
+                    </TouchableOpacity>
                   </View>
+                </View>
       
                 </View>
               )}

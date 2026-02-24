@@ -30,7 +30,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
   // Initialize navigation with type safety
   const navigation = useNavigation<LoginScreenProp>();
 
@@ -50,6 +49,7 @@ const Login = () => {
       });
 
       console.log("Signed in user:", user);
+
     } catch (error: any) {
       console.log("Sign-in error:", error.code, error.message);
       Alert.alert("Sign-in Failed", error.message);
