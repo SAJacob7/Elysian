@@ -17,7 +17,7 @@ import Itinerary from "./itinerary";
 import ProfilePreferences from "./profile_preferences";
 import CreatePost from "./create_post";
 
-type FavoritesStackParamList = {
+export type FavoritesStackParamList = {
   FavoritesMain: undefined;
   Itinerary: undefined;
 };
@@ -29,7 +29,7 @@ type ProfileStackParamList = {
 
 export type HomeStackParamList = {
   HomeMain: undefined;
-  CreatePost: {imageURIs: string[]};
+  CreatePost: { imageURIs: string[] };
 }
 
 // Define the navigation parameter list
@@ -142,7 +142,7 @@ export default function NavigationBar() {
       />
 
       <Tab.Screen name="Recommendations" component={Recommendations} />
-      
+
       <Tab.Screen
         name="Favorites"
         component={FavoritesStackScreen}
