@@ -9,70 +9,67 @@ import { StyleSheet } from "react-native";
 export const itineraryStyles = StyleSheet.create({
     // Add these inside your StyleSheet.create({...})
 
-    itineraryBuilderWrapper: {
-        flex: 1,
-        paddingHorizontal: 18,
-        paddingTop: 12,
+    pageContainer: {
+        flex: 1
     },
 
     itineraryCityHeaderRow: {
-        flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
         marginBottom: 18,
-    },
-
-    itineraryCityTitleWrap: {
-        flex: 1,
-        alignItems: "center",
+        paddingHorizontal: 18,
+        paddingTop: 12
     },
 
     itineraryCityName: {
-        fontSize: 26,
-        fontWeight: "700",
+        fontWeight: "800",
+        fontSize: 30,
         color: "#000",
+        textAlign: "center"
     },
 
     itineraryCountryName: {
-        fontSize: 16,
-        fontWeight: "400",
+        fontSize: 20,
+        fontWeight: "600",
         color: "#555",
-        marginTop: -2,
+        textAlign: "center"
     },
 
-    // ===== Title overlay (search mode) =====
-    itineraryTitleWrapper: {
-        position: "absolute",
-        top: 90,
-        left: 0,
-        right: 0,
-        alignItems: "center",
+    container: {
+        flex: 1,
+        paddingTop: 120,
+        alignItems: "center",       // horizontal center
+        paddingHorizontal: 30,
     },
 
     itineraryTitle: {
-        fontSize: 42,
-        fontWeight: "700",
+        fontWeight: "800",
+        fontSize: 50,
         textAlign: "center",
         color: "#000",
-        lineHeight: 44,
     },
 
-    // ===== Category Pills =====
+    itineraryDescription: {
+        fontSize: 20,
+        textAlign: "center",
+        paddingHorizontal: 20,
+        marginTop: 35
+    },
+
     itineraryPillsRow: {
         marginTop: 10,
         maxHeight: 50,
     },
 
     itineraryPillsContent: {
-        paddingHorizontal: 4,
+        paddingLeft: 20, 
         alignItems: "center",
     },
 
     itineraryPill: {
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 12,
         borderRadius: 20,
-        backgroundColor: "rgba(0,0,0,0.08)",
+        backgroundColor: "white",
         marginRight: 10,
     },
 
@@ -81,7 +78,7 @@ export const itineraryStyles = StyleSheet.create({
     },
 
     itineraryPillText: {
-        fontSize: 14,
+        fontSize: 16,
         color: "#000",
         fontWeight: "500",
     },
@@ -90,7 +87,6 @@ export const itineraryStyles = StyleSheet.create({
         color: "#fff",
     },
 
-    // ===== Activities List =====
     itineraryActivityRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -117,36 +113,22 @@ export const itineraryStyles = StyleSheet.create({
         color: "#000",
     },
 
-    // ===== Generate Button =====
-    itineraryGenerateBtn: {
-        backgroundColor: "#000",
-        paddingVertical: 14,
-        borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 20,
-    },
-
-    itineraryGenerateBtnDisabled: {
-        backgroundColor: "#999",
-    },
-
-    itineraryGenerateBtnText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "600",
-    },
     itineraryActivitiesWrap: {
-        flex: 1,
         marginTop: 16,
-        backgroundColor: "rgba(255,255,255,0.6)",
         borderRadius: 16,
-        paddingHorizontal: 16,
+        paddingHorizontal: 40,
         paddingTop: 12,
-        overflow: "hidden",
     },
 
+    bottomImage: {
+        width: 200,
+        height: 200,
+        marginTop: 30
+    },
 
-
+    errorText: {
+        color: "#888", 
+        padding: 12
+    }
 
 });

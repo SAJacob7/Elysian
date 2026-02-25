@@ -126,7 +126,7 @@ export const styles = StyleSheet.create({
 
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#white", // -> Change to transparent for background image to show
     
   },
   
@@ -136,7 +136,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 0, // Remove extra bottom space
-    backgroundColor: "white",
+    backgroundColor: "white", // Remove for background image to show
   },
 
   sectionTitle: {
@@ -149,8 +149,8 @@ export const styles = StyleSheet.create({
   pageTitle: {
     textAlign: "left",
     fontWeight: "800",
-    fontSize: 40,
-    lineHeight: 40,
+    fontSize: 45,
+    lineHeight: 45,
     color: "#000",
     marginBottom: 20,
     marginTop: -20,
