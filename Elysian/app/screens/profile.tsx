@@ -3,14 +3,14 @@ File: profile.tsx
 Function: This is the user Profile screen component for the app. 
 */
 
-import React, { useEffect, useState } from "react";
-import { View, Image, ScrollView, TouchableOpacity, Modal } from "react-native";
-import { Text, Button, TextInput } from "react-native-paper";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Image, ScrollView, TouchableOpacity, Modal, Pressable, ImageBackground } from "react-native";
+import { Text, Button, TextInput, ActivityIndicator } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { onAuthStateChanged, User, updateProfile } from "firebase/auth";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
 import { styles, inputTheme } from "./app_styles.styles";
 import { profileStyles } from "./profile.styles";
@@ -25,8 +25,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
-import { getAuth } from "firebase/auth";
-import { deleteField } from "firebase/firestore";
 import UserItineraries from "./user_itineraries";
 import type { Itinerary } from "./user_itineraries";
 import { itinerarySubTabStyles } from "./user_itineraries.styles";
@@ -71,6 +69,7 @@ const Profile = () => {
   const [expandedReview, setExpandedReview] = useState<{ [key: string]: boolean }>({});
   const [userFavorites, setUserFavorites] = useState<{ [key: string]: boolean }>({});
   const [openItinerary, setOpenItinerary] = useState<Itinerary | null>(null);
+  const [openPost, setOpenPost] = useState<Post | null>(null);
 
   const subTab = createMaterialTopTabNavigator();
 
@@ -231,55 +230,11 @@ const Profile = () => {
     navigation.navigate("ProfilePreferences" as never);
   };
 
-  const removeCity = async (city: { id: string; name: string; country: string }) => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
-
-      await setDoc(
-        userFavoritesRef,
-        {
-          [city.id]: deleteField(),
-        },
-        { merge: true }
-      );
-    } catch (err) {
-      console.error("Error removing from favorites:", err);
-    }
-  };
-
-  const addCity = async (city: { id: string; name: string; country: string }) => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        console.error("User not signed in.");
-        return;
-      }
-      const userFavoritesRef = doc(FIREBASE_DB, "userFavorites", user.uid);
-
-      await setDoc(
-        userFavoritesRef,
-        {
-          [city.id]: {
-            city_name: city.name,
-            country_name: city.country,
-          },
-        },
-        { merge: true }
-      );
-    } catch (err) {
-      console.error("Error adding to favorites:", err);
-    }
-  };
-
-  const UserPosts = () => {
+  const UserPosts = ({onOpenPost}: {onOpenPost: (post: Post) => void}) => {
     const [posts, setPosts] = useState<Post[]>([]); //initializes post as an empty array which is then updated by setPosts
-    const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-    const [modalVisible, setModalVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const doubleTap = useRef<number | null>(null);
+    const [openPost, setOpenPost] = useState <Post | null>(null);
 
     useEffect(() => {
       if (!user) {
@@ -297,157 +252,69 @@ const Profile = () => {
           ...(doc.data() as Omit<Post, "id">),
         }));
         setPosts(data);
+        setLoading(false);
       });
       return () => unsubscribe();
     }, [user]);
 
-    const openPostModal = (post: Post) => {
-      setSelectedPost(post);
-      setModalVisible(true);
-    };
+    if (loading) {
+      return (
+        <View style={itinerarySubTabStyles.itineraryLoading}>
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    }
 
-    const closePostModal = () => {
-      setSelectedPost(null);
-      setModalVisible(false);
+    if (posts.length === 0){
+      return (
+        <View style={itinerarySubTabStyles.itineraryEmpty}>
+          <Text>No posts found.</Text>
+        </View>
+      );
     }
 
     return (
-      <SafeAreaView edges={["top"]}>
-        <FlatList
-          data={posts}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={homeStyles.postContainer}>
-
-              {/* Image */}
-              <View style={homeStyles.imageContainer}>
-                <FlatList
-                  data={item.urls}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(uri, index) => uri + index}
-                  renderItem={({ item: uri }) => (
-                    <Image
-                      source={{ uri }}
-                      style={homeStyles.cityImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                />
-
-                {/* Progressive Blur on bottom */}
-                <View style={homeStyles.postBlurContainer}>
-                  <MaskedView
-                    maskElement={
-                      <LinearGradient
-                        colors={["transparent", "rgba(255,255,255,0.9)"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
-                        style={{ flex: 1 }}
-                      />
-                    }
-                    style={{ flex: 1 }}
-                  >
-                    <BlurView
-                      intensity={100}
-                      tint="dark"
-                      style={{ flex: 1 }}
-                    />
-                  </MaskedView>
-                </View>
-
-                {/* City, Country */}
-                {item.city && (
-                  <View style={homeStyles.cityOverlay}>
-                    <Text style={homeStyles.cityFont}>
-                      {item.city.name}
-                    </Text>
-
-                    <View style={homeStyles.pinIcon}>
-                      <MaterialCommunityIcons
-                        name="map-marker-outline"
-                        size={22}
-                        color="white"
-                      />
-                      <Text style={homeStyles.countryFont}>
-                        {item.city.country}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* Rating */}
-                {item.ratingValue !== undefined && (
-                  <View style={homeStyles.ratingOverlay}>
-                    <View style={homeStyles.ratingTag}>
-                      <Text style={homeStyles.ratingFont}>
-                        {item.ratingValue.toFixed(1)}
-                      </Text>
-                      <MaterialCommunityIcons
-                        name="star-face"
-                        size={20}
-                        color="#000"
-                      />
-                    </View>
-                  </View>
-                )}
-              </View>
-
-              {/* Uploader, review, date */}
-              <View style={homeStyles.contentContainer}>
-                <View>
-                  <Text style={homeStyles.uploader}>
-                    @{item.uploader}
-                  </Text>
-                  <TouchableOpacity onPress={() => handleReview(item.id)}>
-                    <Text
-                      style={homeStyles.reviewFont}
-                      numberOfLines={expandedReview[item.id] ? undefined : 2}
-                      ellipsizeMode="tail"
-                    >
-                      {item.review}
-                    </Text>
-                  </TouchableOpacity>
-                  <Text style={homeStyles.date}>
-                    {new Date(item.timestamp).toLocaleDateString()}
-                  </Text>
-                </View>
-
-                <View style={homeStyles.postIcons}>
-                  <TouchableOpacity>
-                    <Ionicons name="heart-outline" size={28} color="#000" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
+      <>
+      <ScrollView style = {{ flex: 1}}>
+        <View 
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+          }}
+          >
+            {posts.map((post) => {
+              const imageUrl = post.urls?.[0];
+              return (
+                <View
+                  key = {post.id}
+                  style={itinerarySubTabStyles.itineraryGrid}
+                >
+                  <Pressable
                     onPress={() => {
-                      if (!item.city) return;
-
-                      const postCity = {
-                        id: item.city.id,
-                        name: item.city.name,
-                        country: item.city.country,
-                      };
-
-                      if (userFavorites[item.city.id]) { // Already saved so remove city 
-                        removeCity(postCity);
-                      } else {
-                        addCity(postCity); // Not saved so add city to favorites 
+                      const now = Date.now();
+                      if (doubleTap.current && now - doubleTap.current < 300) {
+                        onOpenPost(post);
                       }
+                      doubleTap.current = now;
                     }}
                   >
-                    <Ionicons
-                      name={item.city && userFavorites[item.city.id] ? "bookmark" : "bookmark-outline"}
-                      size={28}
-                      color={item.city && userFavorites[item.city.id] ? "#000" : "#000"}
-                    />
-                  </TouchableOpacity>
+                    <ImageBackground
+                      source = {imageUrl ? { uri: imageUrl } : undefined}
+                      style = {itinerarySubTabStyles.itineraryCard}
+                    >
+                      <View style = {itinerarySubTabStyles.itineraryTextBackground}>
+                        <Text style = {itinerarySubTabStyles.itineraryCityText}>
+                          {post.city?.name}, {post.city?.country}
+                        </Text>
+                      </View>
+                    </ImageBackground>
+                  </Pressable>
                 </View>
-              </View>
-
-            </View>
-          )}
-        />
-      </SafeAreaView>
+              );
+            })}
+          </View>
+      </ScrollView>
+      </>
     );
   };
 
@@ -565,7 +432,7 @@ const Profile = () => {
             name="Posts"
             children={() => (
               <View style={{ flex: 1, backgroundColor: "#fff" }}>
-                <UserPosts />
+                <UserPosts onOpenPost={setOpenPost}/>
               </View>
             )}
           />
@@ -606,6 +473,36 @@ const Profile = () => {
           <Button
             mode="contained"
             onPress={() => setOpenItinerary(null)}
+            style={styles.cityModalCloseBtn}
+          >
+            Close
+          </Button>
+        </View>
+      )}
+
+      {openPost && (
+        <View style={styles.cityModalContainer}>
+          <ScrollView contentContainerStyle={styles.cityModalContent}>
+            {openPost.urls?.[0] && (
+              <Image
+                source={{ uri: openPost.urls[0] }}
+                style={styles.cityModalImage}
+                resizeMode="cover"
+              />
+            )}
+            <Text style = {styles.cityModalTitle}>
+              {openPost.city?.name}, {openPost.city?.country}
+            </Text>
+            <Text style={{marginTop:10}}>
+              {openPost.review}
+            </Text>
+            <Text style={{marginTop:10}}>
+              Ratng: {openPost.ratingValue?.toFixed(1)}
+            </Text>
+          </ScrollView>
+          <Button
+            mode="contained"
+            onPress={() => setOpenPost(null)}
             style={styles.cityModalCloseBtn}
           >
             Close
