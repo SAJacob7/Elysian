@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, ScrollView, Pressable, TouchableOpacity } from "react-native";
+import { View, ScrollView, Pressable, TouchableOpacity, Alert, } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, TextInput } from "react-native-paper";
+import { Text, TextInput, Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -11,7 +11,7 @@ import { styles } from "./app_styles.styles";
 import type { FavoritesStackParamList } from "./navigation_bar";
 
 import { getAuth } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
+import { addDoc, collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 
 type FavCity = {
@@ -207,9 +207,40 @@ const Itinerary = () => {
     console.log(activityOptions);
   };
 
+  const saveItinerary = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        Alert.alert("Not signed in", "Please sign in again.");
+        return;
+      }
+
+      if (!selectedCity) {
+        Alert.alert("No city selected", "Pick a city first.");
+        return;
+      }
+      const itineraryRef = collection(FIREBASE_DB, "userItineraries", user.uid, "savedItineraries");
+      await addDoc(itineraryRef, {
+        city: selectedCity.name,
+        country: selectedCity.country,
+        activities: selectedActivities,
+        updatedAt: new Date(),
+      });
+
+
+      console.log("Itinerary saved successfully!");
+      navigation.goBack();
+    } catch (err) {
+      console.error("Error saving itinerary:", err);
+    }
+
+  };
+
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       {/* ===== Overlay back icon (ONLY in search mode, not builder) ===== */}
       {!searchOpen && !isBuilderMode && (
         <View style={styles.topLeftIcon}>
@@ -385,7 +416,7 @@ const Itinerary = () => {
             <ScrollView
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingBottom: 140 }}
+              contentContainerStyle={{ paddingBottom: 200 }}
             >
               {activitiesLoading ? (
                 <Text style={{ color: "#888", padding: 12 }}>Loading activities...</Text>
@@ -416,17 +447,22 @@ const Itinerary = () => {
                     </TouchableOpacity>
                   );
                 })
+              )}
 
+              {/* Save button */}
+              {selectedCity && selectedActivities.length > 0 && (
+                <Button
+                  mode="contained"
+                  onPress={saveItinerary}
+                  style={[styles.button, { marginTop: 35 }]}
+                  labelStyle={styles.buttonLabel}
+                >
+                  Save
+                </Button>
               )}
             </ScrollView>
 
-            {/* Save button */}
-            {/* <TouchableOpacity
-              onPress={handleSaveItinerary}
-              style={styles.button}
-            >
-              <Text style={styles.buttonLabel}>Save Itinerary</Text>
-            </TouchableOpacity> */}
+
           </View>
         </View>
       )}
