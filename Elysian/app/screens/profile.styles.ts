@@ -26,7 +26,7 @@ export const profileStyles = StyleSheet.create({
   halfCircleCutout: {
     position: "absolute",
     bottom: -320, // controls how deep the curve goes
-    left: "30%",
+    left: "28%",
     transform: [{ translateX: -150 }],
     width: 800,
     height: 400,
