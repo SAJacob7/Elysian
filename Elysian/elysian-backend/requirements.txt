@@ -7,4 +7,4 @@ joblib
 scikit-learn
 firebase_admin
 requests
-google-generativeai
+google-generativeai==0.8.6
