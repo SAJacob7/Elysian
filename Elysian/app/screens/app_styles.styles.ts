@@ -1,6 +1,22 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  landingContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingTop: 150, // control how far from top
+  },
+
+  landingTitle: {
+    justifyContent: "flex-start",
+    paddingTop: 50,
+    fontSize: 70,
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "white",
+  },
+
   container: {
     flex: 1,
     justifyContent: "center",
