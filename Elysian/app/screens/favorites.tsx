@@ -232,14 +232,27 @@ const Favorites = () => {
 
     let out = (good || fallback || "").trim();
 
-    if (out.length > 240) {
-      out =
-        out
-          .slice(0, 240)
-          .replace(/\s+\S*$/, "")
-          .trimEnd() + "...";
-    }
+    const MAX = 520; // cap
+    if (out.length > MAX) {
+      let cut = out.slice(0, MAX).trimEnd();
 
+      // try to end at punctuation so it doesn't look chopped
+      const lastPunct = Math.max(
+        cut.lastIndexOf("."),
+        cut.lastIndexOf("!"),
+        cut.lastIndexOf("?")
+      );
+
+      if (lastPunct > 80) {
+        cut = cut.slice(0, lastPunct + 1);
+      } else {
+        // fallback: cut at a word boundary, but don't add "..."
+        cut = cut.replace(/\s+\S*$/, "").trimEnd();
+        if (!cut.endsWith(".")) cut += ".";
+      }
+
+      out = cut;
+    }
     return out || "No description available.";
   };
 
