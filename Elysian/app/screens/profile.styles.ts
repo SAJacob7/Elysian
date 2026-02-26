@@ -115,15 +115,39 @@ export const profileStyles = StyleSheet.create({
     color: "#1B1E28",
     marginBottom: 25,
   },
-  
+
   closeButton: {
     position: "absolute",
     top: 10,
     right: 10,
     padding: 6,
     zIndex: 10,
+    borderRadius: 50,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
   },
-
+  closeButtonShared: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    padding: 6,
+    zIndex: 10,
+    borderRadius: 50,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(174, 170, 170, 0.15)",
+  },
+  sharedInput: {
+    backgroundColor: "transparent",
+    marginHorizontal: 12,
+    marginTop: 30
+  },
+  activityInput: {
+    backgroundColor: "transparent",
+    marginTop: 10,
+    marginBottom: 10,
+  },
 
 
 });

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, ScrollView, Pressable, TouchableOpacity, Alert, Image} from "react-native";
+import { View, ScrollView, Pressable, TouchableOpacity, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput, Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
@@ -188,7 +188,7 @@ const Itinerary = () => {
     setActivitiesError(null);
 
     try {
-      const res = await fetch(`http://100.70.30.211:5003/api/activities`, {
+      const res = await fetch(`https://capstone-team-generated-group30-project.onrender.com/api/activities`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -221,12 +221,17 @@ const Itinerary = () => {
         Alert.alert("No city selected", "Pick a city first.");
         return;
       }
-      const itineraryRef = collection(FIREBASE_DB, "userItineraries", user.uid, "savedItineraries");
+      const itineraryRef = collection(FIREBASE_DB, "itineraries");
       await addDoc(itineraryRef, {
         city: selectedCity.name,
         country: selectedCity.country,
-        activities: selectedActivities,
+        activities: selectedActivities.map((a) => ({
+          name: a,
+          likes: [], // empty until users start liking
+        })),
         updatedAt: new Date(),
+        ownerId: user.uid,
+        sharedWith: [], // Empty until shared with someone.
       });
 
 
@@ -317,7 +322,7 @@ const Itinerary = () => {
       )}
 
       {/* Dropdown results */}
-      {searchOpen && dropdownOpen && searchQuery.trim().length > 0 &&(
+      {searchOpen && dropdownOpen && searchQuery.trim().length > 0 && (
         <GlassView style={styles.searchDropdown}>
           <ScrollView keyboardShouldPersistTaps="handled">
             {loading ? (
@@ -415,7 +420,7 @@ const Itinerary = () => {
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{ paddingBottom: 200 }}
               >
-                {!activitiesLoading && !activitiesError && activityOptions.length > 0 &&(
+                {!activitiesLoading && !activitiesError && activityOptions.length > 0 && (
                   visibleActivities.map((a) => {
                     const checked = selectedActivities.includes(a.name);
                     return (

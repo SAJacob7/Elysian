@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     fontSize: 70,
     textAlign: "center",
     fontWeight: "bold",
-    color: "white",
+    color: "black",
   },
 
   container: {

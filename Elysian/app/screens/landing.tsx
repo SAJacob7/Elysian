@@ -10,6 +10,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text } from "react-native-paper";
 import { styles } from "./app_styles.styles";
 
+
 // Define the navigation parameter list
 export type RootParamList = {
   Login: undefined;
@@ -26,20 +27,20 @@ const Landing = () => {
   const navigation = useNavigation<LandingScreenProp>();
 
   const fadeAnim = useRef(new Animated.Value(1)).current; // Start fully visible
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 
   useEffect(() => {
     // Set a timer to start fade out after 3 seconds
     const timer = setTimeout(() => {
-      Animated.timing(fadeAnim, {
-        toValue: 0, // Fade to invisible
-        duration: 1000, // Fade out duration (ms)
-        useNativeDriver: false,
-      }).start(() => {
-        // Navigate to Login screen after fading out
-        navigation.replace("Login");
-      });
+      Animated.timing(scaleAnim, {
+      toValue: 1.2,
+      duration: 1500,
+      useNativeDriver: true,
+    }).start(() => {
+      navigation.replace("Login");
+    });
     }, 3000); // Delay duration before starting fade out animation
 
     return () => clearTimeout(timer); // Cleanup timer on component unmount

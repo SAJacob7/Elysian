@@ -511,81 +511,84 @@ const Favorites = () => {
 
       {/* Favorites list */}
       {!searchOpen && (
-        <ScrollView contentContainerStyle={styles.homeContainer}>
-          <Text variant="headlineLarge" style={styles.pageTitle}>
-            Favorites
-          </Text>
+        <>
+          {loading && (
+            <PenguinLoader text="Loading your favorite cities!" />
+          )}
+          {error && !loading && <PenguinLoader text={error} />}
+          
+          <ScrollView contentContainerStyle={styles.homeContainer}>
+            <Text variant="headlineLarge" style={styles.pageTitle}>
+              Favorites
+            </Text>
+            {!loading && favorites.length > 0 && (
+              <View style={favoritesStyles.resultsContainer}>
+                {favorites.map((city) => (
+                  <Pressable
+                    key={city.city_id}
+                    onPress={() => {
+                      setSelectedCity(city);
+                      setCityModalOpen(true);
+                    }}
+                    style={favoritesStyles.cityCard}
+                  >
+                    {city.image ? (
+                      <Image
+                        source={{ uri: city.image }}
+                        style={favoritesStyles.cityCardImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={favoritesStyles.cityCardPlaceholder} />
+                    )}
 
-          {loading && <PenguinLoader text="Loading your favorite cities!" />}
-          {error && !loading && <Text>{error}</Text>}
-
-          {!loading && favorites.length > 0 && (
-            <View style={favoritesStyles.resultsContainer}>
-              {favorites.map((city) => (
-                <Pressable
-                  key={city.city_id}
-                  onPress={() => {
-                    setSelectedCity(city);
-                    setCityModalOpen(true);
-                  }}
-                  style={favoritesStyles.cityCard}
-                >
-                  {city.image ? (
-                    <Image
-                      source={{ uri: city.image }}
-                      style={favoritesStyles.cityCardImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={favoritesStyles.cityCardPlaceholder} />
-                  )}
-
-                  {/* Progressive Blur on bottom 1/3 */}
-                  <View style={favoritesStyles.cityCardBlurContainer}>
-                    <MaskedView
-                      maskElement={
-                        <LinearGradient
-                          colors={["transparent", "rgba(255,255,255,0.9)"]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
+                    {/* Progressive Blur on bottom 1/3 */}
+                    <View style={favoritesStyles.cityCardBlurContainer}>
+                      <MaskedView
+                        maskElement={
+                          <LinearGradient
+                            colors={["transparent", "rgba(255,255,255,0.9)"]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={{ flex: 1 }}
+                          />
+                        }
+                        style={{ flex: 1 }}
+                      >
+                        <BlurView
+                          intensity={100}
+                          tint="dark"
                           style={{ flex: 1 }}
                         />
-                      }
-                      style={{ flex: 1 }}
+                      </MaskedView>
+                    </View>
+
+                    {/* Text on top of blurred area */}
+                    <View style={favoritesStyles.cityCardTextContainer}>
+                      <Text style={favoritesStyles.cityCardText}>
+                        {city.city_name}, {city.country}
+                      </Text>
+                    </View>
+
+                    {/* Remove favorite icon */}
+                    <Pressable
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        removeFavorite(city);
+                      }}
+                      style={[
+                        favoritesStyles.removeIconBtn,
+                        favoritesStyles.removeIconBtnShadow,
+                      ]}
                     >
-                      <BlurView
-                        intensity={100}
-                        tint="dark"
-                        style={{ flex: 1 }}
-                      />
-                    </MaskedView>
-                  </View>
-
-                  {/* Text on top of blurred area */}
-                  <View style={favoritesStyles.cityCardTextContainer}>
-                    <Text style={favoritesStyles.cityCardText}>
-                      {city.city_name}, {city.country}
-                    </Text>
-                  </View>
-
-                  {/* Remove favorite icon */}
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      removeFavorite(city);
-                    }}
-                    style={[
-                      favoritesStyles.removeIconBtn,
-                      favoritesStyles.removeIconBtnShadow,
-                    ]}
-                  >
-                    <Ionicons name="bookmark" size={18} color="#fff" />
+                      <Ionicons name="bookmark" size={18} color="#fff" />
+                    </Pressable>
                   </Pressable>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </ScrollView>
+                ))}
+              </View>
+            )}
+          </ScrollView>
+        </>
       )}
 
       {/* Full-screen dim overlay */}

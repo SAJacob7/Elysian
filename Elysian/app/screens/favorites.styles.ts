@@ -78,5 +78,5 @@ export const favoritesStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
-  },
+  }
 });

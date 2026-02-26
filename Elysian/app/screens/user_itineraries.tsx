@@ -3,26 +3,41 @@ File: user_itineraries.tsx
 Function: This is the user's itineraries subtab screen component for the Profile page. 
 */
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, ImageBackground, TouchableOpacity, Pressable, Image } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, ImageBackground, TouchableOpacity, Pressable, Image, TextInput } from "react-native";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { styles } from "./app_styles.styles";
 import { Button } from "react-native-paper";
 import { itinerarySubTabStyles } from "./user_itineraries.styles";
+import { Ionicons, } from "@expo/vector-icons";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
+
 
 
 
 
 export type Itinerary = {
     id: string;
-    activities: string[];
+    activities: Activity[];
+
     city: string;
     country: string;
     imageUrl?: string | null;
+    ownerId: string;
+    sharedWith: string[];
 };
+export type Activity = {
+    name: string;
+    likes: string[];
+};
+
 type UserItinerariesProps = {
     onOpenItinerary: (itin: Itinerary) => void;
+    onOpenShareModal: (itin: Itinerary) => void;
 };
+
 
 
 const fetchUnsplashImage = async (cityName: string, country: string) => {
@@ -52,64 +67,95 @@ const fetchUnsplashImage = async (cityName: string, country: string) => {
 };
 
 
-const UserItineraries = ({ onOpenItinerary }: UserItinerariesProps) => {
+const UserItineraries = ({ onOpenItinerary, onOpenShareModal }: UserItinerariesProps) => {
     const [itineraries, setItineraries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [unsplashImageUrl, setUnsplashImageUrl] = useState<{ [key: string]: string | null }>({});
 
 
+
     const doubleTap = useRef<number | null>(null);
 
     useEffect(() => {
-        const fetchItineraries = async () => {
-            try {
-                const currentUser = FIREBASE_AUTH.currentUser; // Get the current user logged in.
-                if (!currentUser) return;
+        const currentUser = FIREBASE_AUTH.currentUser;
+        if (!currentUser) return;
 
-                const itinerariesRef = collection(
-                    FIREBASE_DB,
-                    "userItineraries",
-                    currentUser.uid,
-                    "savedItineraries"
-                );
+        // Query itineraries the user owns
+        const qOwned = query(
+            collection(FIREBASE_DB, "itineraries"),
+            where("ownerId", "==", currentUser.uid)
+        );
 
-                const snapshot = await getDocs(itinerariesRef);
+        // Query itineraries shared with the user
+        const qShared = query(
+            collection(FIREBASE_DB, "itineraries"),
+            where("sharedWith", "array-contains", currentUser.uid)
+        );
 
-                const data: Itinerary[] = snapshot.docs.map((doc) => { // Created the Itinerary type and store the data in here.
-                    const itin_data = doc.data();
-                    return {
-                        id: doc.id, // Id of the itinerary.
-                        activities: itin_data.activities || [], // Activities
-                        city: itin_data.city || "", // City
-                        country: itin_data.country || "", // Country
-                    };
-                });
-                setItineraries(data);
-                // Now, try to get the images of the city, country to display.
-                const imageGet = data.map(async (itin) => {
-                    const img = await fetchUnsplashImage(itin.city, itin.country);
-                    return { id: itin.id, img };
-                });
-                const result_images = await Promise.all(imageGet);
+        // Listen to both queries in real time
+        const unsubOwned = onSnapshot(qOwned, async (ownedSnap) => {
+            const ownedData = ownedSnap.docs.map((doc) => ({
+                id: doc.id,
+                ...(doc.data() as any),
+            }));
 
-                // Now, map the images taken from unsplash to the city, country.
-                const imageMap: {
-                    [key: string]: string | null
-                } = {};
-                result_images.forEach((r) => {
-                    imageMap[r.id] = r.img; // The key is the itinerary ID, the value is the image.
-                });
-                setUnsplashImageUrl(imageMap);
+            // Fetch images for owned itineraries
+            const imageGet = ownedData.map(async (itin) => {
+                const img = await fetchUnsplashImage(itin.city, itin.country);
+                return { id: itin.id, img };
+            });
 
-            } catch (error) {
-                console.error("Error fetching itineraries:", error);
-            } finally {
-                setLoading(false);
-            }
+            const result_images = await Promise.all(imageGet);
+
+            const imageMap: { [key: string]: string | null } = {};
+            result_images.forEach((r) => {
+                imageMap[r.id] = r.img;
+            });
+
+            setUnsplashImageUrl((prev) => ({ ...prev, ...imageMap }));
+            setItineraries((prev) => {
+                const sharedOnly = prev.filter((i) => i.ownerId !== currentUser.uid);
+                return [...ownedData, ...sharedOnly];
+            });
+        });
+
+        const unsubShared = onSnapshot(qShared, async (sharedSnap) => {
+            const sharedData = sharedSnap.docs.map((doc) => ({
+                id: doc.id,
+                ...(doc.data() as any),
+            }));
+
+            // Fetch images for shared itineraries
+            const imageGet = sharedData.map(async (itin) => {
+                const img = await fetchUnsplashImage(itin.city, itin.country);
+                return { id: itin.id, img };
+            });
+
+            const result_images = await Promise.all(imageGet);
+
+            const imageMap: { [key: string]: string | null } = {};
+            result_images.forEach((r) => {
+                imageMap[r.id] = r.img;
+            });
+
+            setUnsplashImageUrl((prev) => ({ ...prev, ...imageMap }));
+            setItineraries((prev) => {
+                const ownedOnly = prev.filter((i) => i.ownerId === currentUser.uid);
+                return [...ownedOnly, ...sharedData];
+            });
+        });
+
+        setLoading(false);
+
+        // Cleanup listeners on unmount
+        return () => {
+            unsubOwned();
+            unsubShared();
         };
-
-        fetchItineraries();
     }, []);
+
+
+
 
 
     if (loading) {
@@ -163,24 +209,56 @@ const UserItineraries = ({ onOpenItinerary }: UserItinerariesProps) => {
                                     source={imageUrl ? { uri: imageUrl } : undefined}
                                     style={itinerarySubTabStyles.itineraryCard}
                                 >
-                                    <View
-                                        style={itinerarySubTabStyles.itineraryTextBackground}
+                                    <TouchableOpacity
+                                        style={itinerarySubTabStyles.shareIcon}
+                                        onPress={() => onOpenShareModal(itin)}
+
                                     >
-                                        <Text
-                                            style={itinerarySubTabStyles.itineraryCityText}
+
+                                        <View style={itinerarySubTabStyles.shareOverlay}>
+                                            <View style={itinerarySubTabStyles.shareTag}>
+                                                <Ionicons name="person-add" size={17} color="#000" />
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
+                                    <View style={itinerarySubTabStyles.itineraryCardBlurContainer}>
+                                        <MaskedView
+                                            maskElement={
+                                                <LinearGradient
+                                                    colors={["transparent", "rgba(255,255,255,0.9)"]}
+                                                    start={{ x: 0, y: 0 }}
+                                                    end={{ x: 0, y: 1 }}
+                                                    style={{ flex: 1 }}
+                                                />
+                                            }
+                                            style={{ flex: 1 }}
                                         >
-                                            {itin.city}, {itin.country}
-                                        </Text>
+                                            <BlurView
+                                                intensity={100}
+                                                tint="dark"
+                                                style={{ flex: 1 }}
+                                            />
+                                        </MaskedView>
+                                        <View style={itinerarySubTabStyles.itineraryCardTextContainer}>
+                                            <Text
+                                                style={itinerarySubTabStyles.itineraryCityText}
+                                            >
+                                                {itin.city}, {"\n"}{itin.country}
+                                            </Text>
+                                        </View>
                                     </View>
                                 </ImageBackground>
                             </Pressable>
+
 
 
                         </View>
                     );
                 })}
             </View>
+
         </ScrollView>
+
     );
 
 };
