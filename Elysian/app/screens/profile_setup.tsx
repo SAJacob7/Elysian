@@ -27,12 +27,6 @@ export type RootParamList = {
   NavigationBar: undefined;
 };
 
-// Define the type for Home screen navigation prop
-type ProfileSetUpScreenProp = NativeStackNavigationProp<
-  RootParamList,
-  "ProfileSetup"
->;
-
 // Profile Setup component
 const ProfileSetup = () => {
   // Initialize navigation with type safety
