@@ -13,7 +13,6 @@ import {
   ImageBackground,
 } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
-import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { inputTheme, styles, selectedColors } from "./app_styles.styles";
 import { doc, setDoc } from "firebase/firestore";
@@ -37,8 +36,6 @@ type ProfileSetUpScreenProp = NativeStackNavigationProp<
 // Profile Setup component
 const ProfileSetup = () => {
   // Initialize navigation with type safety
-  // test
-  const navigation = useNavigation<ProfileSetUpScreenProp>();
 
   // List of questions for user
   const questions = [
