@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Animated, Dimensions } from "react-native";
 import { Text } from "react-native-paper";
-import { penguinLoaderStyles } from "./penguin_loader.styles";
+import { penguinLoaderStyles } from "./styles/penguin_loader.styles";
 
 interface Props {
   size?: number;

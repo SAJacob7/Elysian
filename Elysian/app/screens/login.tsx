@@ -15,7 +15,7 @@ import { TextInput, Button, Text } from "react-native-paper";
 import React, { useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
-import { styles, inputTheme } from "./app_styles.styles";
+import { styles, inputTheme } from "./styles/app_styles.styles";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";

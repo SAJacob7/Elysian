@@ -11,8 +11,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
 
-import { styles } from "./app_styles.styles";
-import { profilePreferencesStyles } from "./profile_preferences.styles";
+import { styles } from "./styles/app_styles.styles";
+import { profilePreferencesStyles } from "./styles/profile_preferences.styles";
 
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { getDoc, doc } from "firebase/firestore";

@@ -8,7 +8,7 @@ import { Animated, Image, SafeAreaView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text } from "react-native-paper";
-import { styles } from "./app_styles.styles";
+import { styles } from "./styles/app_styles.styles";
 
 // Define the navigation parameter list
 export type RootParamList = {

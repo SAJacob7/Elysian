@@ -26,8 +26,8 @@ import {
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../FirebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import { query, where, collection, getDocs, orderBy } from "firebase/firestore";
-import { styles, inputTheme } from "./app_styles.styles";
-import { profileStyles } from "./profile.styles";
+import { styles, inputTheme } from "./styles/app_styles.styles";
+import { profileStyles } from "./styles/profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import * as ImagePicker from "expo-image-picker";
@@ -229,7 +229,7 @@ const Profile = () => {
   };
 
   return (
-    <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
+    <Pressable onPress={Keyboard.dismiss} style={profileStyles.dismissKeyboardConstainer}>
       <View style={styles.solidBackgroundContainer}>
         {/* Background image */}
         <View style={profileStyles.topImageContainer}>
@@ -284,15 +284,11 @@ const Profile = () => {
               <View style={styles.modalDimOverlay}>
                 {/* Full-screen Pressable overlay that closes modal */}
                 <Pressable
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  style={profileStyles.modalOverlayPressable}
                   onPress={() => setIsEditing(false)}
                 />
                 <View style={profileStyles.editModalContainer}>
-                  <View style={{ flex: 1, width: "100%" }}>
+                  <View style={profileStyles.editModalInnerContainer}>
                     <TouchableOpacity
                       style={profileStyles.editProfileCloseButtonShared}
                       onPress={() => setIsEditing(false)}
@@ -359,23 +355,18 @@ const Profile = () => {
             </Modal>
           )}
         </ScrollView>
-        <View style={{ flex: 1, marginTop: -500 }}>
+        <View style={profileStyles.tabContainer}>
           <subTab.Navigator
             screenOptions={{
-              tabBarIndicatorStyle: {
-                backgroundColor: "#000",
-                height: 3,
-                borderRadius: 2,
-                alignContent: "center",
-              },
-              tabBarLabelStyle: { fontSize: 22, fontWeight: "600" },
-              tabBarStyle: { backgroundColor: "transparent" },
+              tabBarIndicatorStyle: profileStyles.tabIndicator,
+              tabBarLabelStyle: profileStyles.tabLabel,
+              tabBarStyle: profileStyles.tabBar,
             }}
           >
             <subTab.Screen
               name="Posts"
               children={() => (
-                <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
+                <View style={profileStyles.tabContent}>
                   <UserPosts userId={currentUser?.uid ?? ""} />
                 </View>
               )}
@@ -384,7 +375,7 @@ const Profile = () => {
             <subTab.Screen
               name="Itineraries"
               children={() => (
-                <View style={{ flex: 1, backgroundColor: "#FFFDFC" }}>
+                <View style={profileStyles.tabContent}>
                   <UserItineraries />
                 </View>
               )}

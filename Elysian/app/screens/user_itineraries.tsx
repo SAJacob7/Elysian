@@ -25,14 +25,14 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { styles } from "./app_styles.styles";
+import { styles } from "./styles/app_styles.styles";
 import { TextInput } from "react-native-paper";
-import { itinerarySubTabStyles } from "./user_itineraries.styles";
+import { itinerarySubTabStyles } from "./styles/user_itineraries.styles";
 import { Ionicons } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
-import { profileStyles } from "./profile.styles";
+import { profileStyles } from "./styles/profile.styles";
 import { getAuth } from "firebase/auth";
 import { GlassView } from "expo-glass-effect";
 

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { View, ImageBackground, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { styles } from "./app_styles.styles";
+import { styles } from "./styles/app_styles.styles";
 
 export type RootParamList = {
   Login: undefined;

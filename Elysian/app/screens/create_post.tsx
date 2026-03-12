@@ -7,8 +7,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { View, Image, Pressable, ScrollView, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "react-native-paper";
-import { styles, inputTheme } from "./app_styles.styles";
-import { createPostStyles } from "./create_post.styles";
+import { styles, inputTheme } from "./styles/app_styles.styles";
+import { createPostStyles } from "./styles/create_post.styles";
 
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {

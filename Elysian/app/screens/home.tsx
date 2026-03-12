@@ -17,8 +17,8 @@ import {
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { styles } from "./app_styles.styles";
-import { homeStyles } from "./home.styles";
+import { styles } from "./styles/app_styles.styles";
+import { homeStyles } from "./styles/home.styles";
 import { FIREBASE_DB } from "../../FirebaseConfig";
 import {
   collection,

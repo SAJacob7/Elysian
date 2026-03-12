@@ -18,8 +18,8 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { GlassView } from "expo-glass-effect";
-import { itineraryStyles } from "./itinerary.styles";
-import { styles } from "./app_styles.styles";
+import { itineraryStyles } from "./styles/itinerary.styles";
+import { styles } from "./styles/app_styles.styles";
 import type { FavoritesStackParamList } from "./navigation_bar";
 
 import { getAuth } from "firebase/auth";

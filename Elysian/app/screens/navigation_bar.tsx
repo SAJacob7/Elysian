@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigatorScreenParams } from "@react-navigation/native";
 
-import { styles } from "./app_styles.styles";
+import { styles } from "./styles/app_styles.styles";
 import Icon from "react-native-vector-icons/Ionicons";
 import Home from "./home";
 import Recommendations from "./recommendations";

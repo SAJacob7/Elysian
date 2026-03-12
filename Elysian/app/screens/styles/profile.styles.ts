@@ -7,6 +7,7 @@
  * Used in profile related components across the app.
  */
 
+import { TabActions } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 
 export const profileStyles = StyleSheet.create({
@@ -286,5 +287,46 @@ export const profileStyles = StyleSheet.create({
     height: 150,
     marginTop: 30,
     alignSelf: "center",
+  },
+
+  dismissKeyboardConstainer: {
+    flex: 1,
+  },
+
+  modalOverlayPressable: {
+    position: "absolute",
+    width: "100%",
+    height: "100%"
+  },
+
+  editModalInnerContainer: {
+    flex: 1,
+    width: "100%",
+  },
+
+  tabContainer: {
+    flex: 1,
+    marginTop: -500,
+  },
+  
+  tabContent: {
+    flex: 1,
+    backgroundColor: "#FFFDFC",
+  },
+
+  tabIndicator: {
+    backgroundColor: "#000",
+    height: 3,
+    borderRadius: 2,
+    alignContent: "center",
+  },
+
+  tabLabel: {
+    fontSize: 22,
+    fontWeight: "600",
+  },
+
+  tabBar: {
+    backgroundColor: "transparent",
   },
 });

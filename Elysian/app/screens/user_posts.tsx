@@ -19,13 +19,13 @@ import {
   where,
   orderBy,
 } from "firebase/firestore";
-import { itinerarySubTabStyles } from "./user_itineraries.styles";
+import { itinerarySubTabStyles } from "./styles/user_itineraries.styles";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
-import { styles } from "./app_styles.styles";
-import { homeStyles } from "./home.styles";
-import { profileStyles } from "./profile.styles";
+import { styles } from "./styles/app_styles.styles";
+import { homeStyles } from "./styles/home.styles";
+import { profileStyles } from "./styles/profile.styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export type Post = {
