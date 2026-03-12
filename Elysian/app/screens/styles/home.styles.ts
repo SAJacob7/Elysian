@@ -106,10 +106,10 @@ export const homeStyles = StyleSheet.create({
   },
 
   uploader: {
-    marginTop: 10,
     fontSize: 17,
     fontWeight: 600,
     color: "black",
+    marginTop: 10,
   },
 
   reviewFont: {
