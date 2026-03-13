@@ -56,6 +56,7 @@ export const favoritesStyles = StyleSheet.create({
     right: 0,
     height: "35%", // bottom third
   },
+  
 
   cityCardTextContainer: {
     position: "absolute",
